@@ -7,196 +7,230 @@ export default function App() {
   const [news, setNews] = useState([]);
   const [country, setCountry] = useState("in");
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [category, setCategory] = useState("");
+  const [dark, setDark] = useState(false);
+  const [saved, setSaved] = useState(
+    JSON.parse(localStorage.getItem("savedNews")) || []
+  );
+  const [page, setPage] = useState(1);
 
-  const fetchNews = async () => {
-    setLoading(true);
+  // 🔥 Fetch News
+  const fetchNews = async (reset = false) => {
     try {
       let url = "";
 
       if (country === "in") {
-        url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&country=in&language=en`;
+        url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&country=in`;
       } else {
-        url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&language=en&category=top`;
+        url = `https://newsdata.io/api/1/news?apikey=${API_KEY}`;
       }
 
+      if (category) url += `&category=${category}`;
       if (search) url += `&q=${search}`;
 
       const res = await axios.get(url);
-      setNews(res.data.results || []);
+
+      if (reset) {
+        setNews(res.data.results || []);
+      } else {
+        setNews((prev) => [...prev, ...(res.data.results || [])]);
+      }
     } catch (err) {
       console.log(err);
     }
-    setLoading(false);
   };
 
+  // 🔄 First Load
   useEffect(() => {
-    fetchNews();
-  }, [country]);
+    fetchNews(true);
+  }, [country, category]);
+
+  // 🔍 Live Search
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      fetchNews(true);
+    }, 500);
+    return () => clearTimeout(delay);
+  }, [search]);
+
+  // 🔄 Auto Refresh
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchNews(true);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // ⚡ Infinite Scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop >=
+        document.documentElement.offsetHeight - 100
+      ) {
+        fetchNews();
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // ❤️ Save News
+  const toggleSave = (item) => {
+    let updated;
+    if (saved.find((s) => s.link === item.link)) {
+      updated = saved.filter((s) => s.link !== item.link);
+    } else {
+      updated = [...saved, item];
+    }
+    setSaved(updated);
+    localStorage.setItem("savedNews", JSON.stringify(updated));
+  };
 
   return (
-    <div style={app}>
+    <div style={dark ? darkApp : lightApp}>
       
       {/* 🔥 HEADER */}
       <div style={header}>
         <h1>📰 IT News Aggregate</h1>
-        <p>Tech • India • World • Real-time Updates</p>
+        <button onClick={() => setDark(!dark)} style={btn}>
+          {dark ? "☀️ Light" : "🌙 Dark"}
+        </button>
       </div>
 
       {/* 🔍 SEARCH */}
-      <div style={searchBox}>
-        <input
-          placeholder="Search news..."
-          onChange={(e) => setSearch(e.target.value)}
-          style={input}
-        />
-        <button onClick={fetchNews} style={searchBtn}>
-          Search
-        </button>
+      <input
+        placeholder="Search news..."
+        onChange={(e) => setSearch(e.target.value)}
+        style={input}
+      />
+
+      {/* 🌍 FILTERS */}
+      <div style={filters}>
+        <button onClick={() => setCountry("in")} style={btn}>🇮🇳 India</button>
+        <button onClick={() => setCountry("us")} style={btn}>🌍 World</button>
+
+        <select onChange={(e) => setCategory(e.target.value)} style={input}>
+          <option value="">All</option>
+          <option value="technology">Tech</option>
+          <option value="sports">Sports</option>
+          <option value="business">Business</option>
+          <option value="health">Health</option>
+        </select>
       </div>
 
-      {/* 🌍 TOGGLE */}
-      <div style={toggle}>
-        <button
-          onClick={() => setCountry("in")}
-          style={country === "in" ? active : btn}
-        >
-          🇮🇳 India
-        </button>
-        <button
-          onClick={() => setCountry("us")}
-          style={country === "us" ? active : btn}
-        >
-          🌍 World
-        </button>
-      </div>
-
-      {/* 🔄 LOADING */}
-      {loading && <h2 style={{ textAlign: "center" }}>Loading...</h2>}
-
-      {/* ❌ EMPTY */}
-      {!loading && news.length === 0 && (
-        <h2 style={{ textAlign: "center" }}>No news found 😢</h2>
+      {/* 🔥 TOP HEADLINE */}
+      {news[0] && (
+        <div style={banner}>
+          <h2>{news[0].title}</h2>
+        </div>
       )}
 
-      {/* 📰 CARDS */}
+      {/* 📰 NEWS */}
       <div style={grid}>
         {news.map((n, i) => (
-          <div key={i} style={card} className="card-hover">
+          <div key={i} style={card}>
             <h3>{n.title}</h3>
-            <p style={source}>{n.source_id || "Unknown"}</p>
-            <a href={n.link} target="_blank" style={link}>
-              Read Full →
-            </a>
+
+            <p style={date}>
+              {n.pubDate
+                ? new Date(n.pubDate).toLocaleString()
+                : "No date"}
+            </p>
+
+            <div style={actions}>
+              <button onClick={() => toggleSave(n)}>
+                {saved.find((s) => s.link === n.link) ? "❤️" : "🤍"}
+              </button>
+
+              <button
+                onClick={() =>
+                  navigator.share?.({
+                    title: n.title,
+                    url: n.link,
+                  })
+                }
+              >
+                📤
+              </button>
+            </div>
+
+            <a href={n.link} target="_blank">Read →</a>
           </div>
         ))}
       </div>
-
-      {/* 🔥 ANIMATIONS */}
-      <style>{`
-        @keyframes fadeDown {
-          from {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .card-hover:hover {
-          transform: scale(1.05);
-          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-      `}</style>
     </div>
   );
 }
 
-/* 🎨 LIGHT UI STYLES */
+/* 🎨 STYLES */
 
-const app = {
-  background: "linear-gradient(135deg,#e0f2fe,#f8fafc)",
+const lightApp = {
+  background: "#f8fafc",
   minHeight: "100vh",
-  paddingBottom: "40px",
-  color: "#0f172a"
+  padding: "20px"
+};
+
+const darkApp = {
+  background: "#020617",
+  color: "white",
+  minHeight: "100vh",
+  padding: "20px"
 };
 
 const header = {
-  textAlign: "center",
-  padding: "30px 20px",
-  animation: "fadeDown 1s ease"
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center"
 };
 
-const searchBox = {
+const filters = {
+  margin: "10px 0",
   display: "flex",
-  justifyContent: "center",
-  gap: "10px",
-  marginBottom: "20px"
+  gap: "10px"
 };
 
 const input = {
-  padding: "12px",
-  borderRadius: "25px",
-  border: "1px solid #ccc",
-  width: "260px"
-};
-
-const searchBtn = {
-  padding: "12px 18px",
-  borderRadius: "25px",
-  border: "none",
-  background: "#2563eb",
-  color: "white",
-  cursor: "pointer"
-};
-
-const toggle = {
-  textAlign: "center",
-  marginBottom: "25px"
+  padding: "10px",
+  borderRadius: "10px",
+  border: "1px solid #ccc"
 };
 
 const btn = {
-  margin: "5px",
-  padding: "10px 18px",
-  borderRadius: "20px",
+  padding: "8px 12px",
+  borderRadius: "10px",
   border: "none",
-  background: "#e2e8f0",
-  color: "#0f172a",
   cursor: "pointer"
 };
 
-const active = {
-  ...btn,
+const banner = {
   background: "#2563eb",
-  color: "white"
+  color: "white",
+  padding: "15px",
+  borderRadius: "10px",
+  margin: "15px 0"
 };
 
 const grid = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
-  gap: "20px",
-  padding: "20px"
+  gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
+  gap: "15px"
 };
 
 const card = {
   background: "white",
-  borderRadius: "15px",
-  padding: "20px",
-  transition: "0.3s",
-  boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
-  cursor: "pointer"
+  padding: "15px",
+  borderRadius: "10px",
+  boxShadow: "0 5px 15px rgba(0,0,0,0.1)"
 };
 
-const source = {
-  fontSize: "12px",
-  color: "#64748b",
+const actions = {
+  display: "flex",
+  gap: "10px",
   margin: "10px 0"
 };
 
-const link = {
-  color: "#2563eb",
-  textDecoration: "none",
-  fontWeight: "bold"
+const date = {
+  fontSize: "12px",
+  color: "gray"
 };
