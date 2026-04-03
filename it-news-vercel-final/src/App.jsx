@@ -14,19 +14,13 @@ export default function App() {
     try {
       let url = "";
 
-      // 🇮🇳 India news
       if (country === "in") {
         url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&country=in&language=en`;
-      } 
-      // 🌍 World news FIX
-      else {
+      } else {
         url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&language=en&category=top`;
       }
 
-      // 🔍 Search support
-      if (search) {
-        url += `&q=${search}`;
-      }
+      if (search) url += `&q=${search}`;
 
       const res = await axios.get(url);
       setNews(res.data.results || []);
@@ -41,12 +35,12 @@ export default function App() {
   }, [country]);
 
   return (
-    <div style={appStyle}>
+    <div style={app}>
       
-      {/* 🔥 HEADER */}
-      <div style={header}>
+      {/* 🔥 HERO HEADER */}
+      <div style={hero}>
         <h1>📰 IT News Aggregate</h1>
-        <p style={{ opacity: 0.7 }}>Your Daily Tech + World News Hub</p>
+        <p>Tech • India • World • Real-time Updates</p>
       </div>
 
       {/* 🔍 SEARCH */}
@@ -56,20 +50,20 @@ export default function App() {
           onChange={(e) => setSearch(e.target.value)}
           style={input}
         />
-        <button onClick={fetchNews} style={btn}>Search</button>
+        <button onClick={fetchNews} style={searchBtn}>Search</button>
       </div>
 
-      {/* 🌍 TOGGLE */}
-      <div style={{ textAlign: "center", marginBottom: "20px" }}>
+      {/* 🌍 FILTER */}
+      <div style={toggle}>
         <button
           onClick={() => setCountry("in")}
-          style={country === "in" ? activeBtn : btn}
+          style={country === "in" ? active : btn}
         >
           🇮🇳 India
         </button>
         <button
           onClick={() => setCountry("us")}
-          style={country === "us" ? activeBtn : btn}
+          style={country === "us" ? active : btn}
         >
           🌍 World
         </button>
@@ -78,43 +72,52 @@ export default function App() {
       {/* 🔄 LOADING */}
       {loading && <h2 style={{ textAlign: "center" }}>Loading...</h2>}
 
-      {/* ❌ EMPTY STATE */}
+      {/* ❌ EMPTY */}
       {!loading && news.length === 0 && (
         <h2 style={{ textAlign: "center" }}>No news found 😢</h2>
       )}
 
-      {/* 📰 NEWS GRID */}
-      {!loading && news.length > 0 && (
-        <div style={grid}>
-          {news.map((n, i) => (
-            <div key={i} style={card}>
-              <h3>{n.title}</h3>
-              <p style={{ fontSize: "12px", opacity: 0.6 }}>
+      {/* 📰 CARDS */}
+      <div style={grid}>
+        {news.map((n, i) => (
+          <div key={i} style={card}>
+            
+            {/* 🖼 IMAGE */}
+            {n.image_url && (
+              <img src={n.image_url} style={img} />
+            )}
+
+            <div style={{ padding: "15px" }}>
+              <h3 style={title}>{n.title}</h3>
+
+              <p style={source}>
                 {n.source_id || "Unknown"}
               </p>
+
               <a href={n.link} target="_blank" style={link}>
-                Read More →
+                Read Full →
               </a>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
 /* 🔥 STYLES */
 
-const appStyle = {
+const app = {
   background: "linear-gradient(135deg,#020617,#0f172a)",
   minHeight: "100vh",
   color: "white",
-  padding: "20px"
+  paddingBottom: "40px"
 };
 
-const header = {
+const hero = {
   textAlign: "center",
-  marginBottom: "20px"
+  padding: "40px 20px",
+  fontSize: "22px"
 };
 
 const searchBox = {
@@ -125,39 +128,72 @@ const searchBox = {
 };
 
 const input = {
-  padding: "10px",
-  borderRadius: "10px",
+  padding: "12px",
+  borderRadius: "25px",
   border: "none",
-  width: "250px"
+  width: "280px"
+};
+
+const searchBtn = {
+  padding: "12px 18px",
+  borderRadius: "25px",
+  border: "none",
+  background: "#2563eb",
+  color: "white",
+  cursor: "pointer"
+};
+
+const toggle = {
+  textAlign: "center",
+  marginBottom: "30px"
 };
 
 const btn = {
-  padding: "10px 15px",
-  borderRadius: "10px",
+  margin: "5px",
+  padding: "10px 18px",
+  borderRadius: "20px",
   border: "none",
   background: "#1e293b",
   color: "white",
   cursor: "pointer"
 };
 
-const activeBtn = {
+const active = {
   ...btn,
   background: "#2563eb"
 };
 
 const grid = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
-  gap: "20px"
+  gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+  gap: "25px",
+  padding: "20px"
 };
 
 const card = {
   background: "rgba(255,255,255,0.08)",
-  backdropFilter: "blur(15px)",
-  padding: "15px",
+  backdropFilter: "blur(20px)",
   borderRadius: "15px",
+  overflow: "hidden",
   transition: "0.3s",
-  boxShadow: "0 4px 20px rgba(0,0,0,0.3)"
+  boxShadow: "0 10px 25px rgba(0,0,0,0.4)"
+};
+
+const img = {
+  width: "100%",
+  height: "180px",
+  objectFit: "cover"
+};
+
+const title = {
+  fontSize: "16px",
+  marginBottom: "10px"
+};
+
+const source = {
+  fontSize: "12px",
+  opacity: 0.6,
+  marginBottom: "10px"
 };
 
 const link = {
