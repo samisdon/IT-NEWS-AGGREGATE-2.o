@@ -16,21 +16,17 @@ export default function App() {
     try {
       setLoading(true);
 
-      let url =
-        country === "in"
-          ? `https://newsdata.io/api/1/news?apikey=${API_KEY}&country=in&language=en`
-          : `https://newsdata.io/api/1/news?apikey=${API_KEY}&language=en&q=technology`;
+      let url = `https://gnews.io/api/v4/top-headlines?token=${API_KEY}&lang=en`;
+
+      if (country === "in") url += "&country=in";
+      else url += "&country=us";
 
       if (search) url += `&q=${search}`;
 
       const res = await axios.get(url);
 
-      // 🧠 small delay for smooth UI (no flicker)
-      setTimeout(() => {
-        setNews(res.data.results || []);
-        setLoading(false);
-      }, 300);
-
+      setNews(res.data.articles || []);
+      setLoading(false);
     } catch (err) {
       console.log(err);
       setLoading(false);
@@ -48,8 +44,8 @@ export default function App() {
 
   const toggleSave = (item) => {
     let updated;
-    if (saved.find((s) => s.link === item.link)) {
-      updated = saved.filter((s) => s.link !== item.link);
+    if (saved.find((s) => s.url === item.url)) {
+      updated = saved.filter((s) => s.url !== item.url);
     } else {
       updated = [...saved, item];
     }
@@ -60,19 +56,14 @@ export default function App() {
   return (
     <div style={app}>
       
-      {/* HEADER */}
-      <div style={header}>
-        <h1 style={{ color: "#1e40af" }}>📰 IT News Aggregate</h1>
-      </div>
+      <h1 style={{ textAlign: "center" }}>📰 IT News Aggregate</h1>
 
-      {/* SEARCH */}
       <input
         placeholder="Search news..."
         onChange={(e) => setSearch(e.target.value)}
         style={input}
       />
 
-      {/* FILTER */}
       <div style={filters}>
         <button onClick={() => setCountry("in")} style={btn}>
           🇮🇳 India
@@ -82,13 +73,8 @@ export default function App() {
         </button>
       </div>
 
-      {/* 🔥 SKELETON LOADING */}
       {loading ? (
-        <div style={grid}>
-          {[...Array(6)].map((_, i) => (
-            <div key={i} style={skeleton}></div>
-          ))}
-        </div>
+        <h2 style={{ textAlign: "center" }}>Loading...</h2>
       ) : (
         <div style={grid}>
           {news.map((n, i) => (
@@ -96,29 +82,18 @@ export default function App() {
               <h3>{n.title}</h3>
 
               <p style={date}>
-                {n.pubDate
-                  ? new Date(n.pubDate).toLocaleString()
-                  : "No date"}
+                {n.publishedAt
+                  ? new Date(n.publishedAt).toLocaleString()
+                  : ""}
               </p>
 
               <div style={actions}>
                 <button onClick={() => toggleSave(n)}>
-                  {saved.find((s) => s.link === n.link) ? "❤️" : "🤍"}
-                </button>
-
-                <button
-                  onClick={() =>
-                    navigator.share?.({
-                      title: n.title,
-                      url: n.link,
-                    })
-                  }
-                >
-                  📤
+                  {saved.find((s) => s.url === n.url) ? "❤️" : "🤍"}
                 </button>
               </div>
 
-              <a href={n.link} target="_blank" style={link}>
+              <a href={n.url} target="_blank" style={link}>
                 Read →
               </a>
             </div>
@@ -129,17 +104,12 @@ export default function App() {
   );
 }
 
-/* 🎨 STYLES */
+/* STYLE */
 
 const app = {
   background: "#f1f5f9",
   minHeight: "100vh",
   padding: "20px"
-};
-
-const header = {
-  textAlign: "center",
-  marginBottom: "20px"
 };
 
 const input = {
@@ -149,58 +119,47 @@ const input = {
   width: "100%",
   maxWidth: "400px",
   display: "block",
-  margin: "0 auto"
+  margin: "10px auto"
 };
 
 const filters = {
   display: "flex",
   justifyContent: "center",
-  gap: "10px",
-  margin: "15px 0"
+  gap: "10px"
 };
 
 const btn = {
-  padding: "10px 15px",
+  padding: "10px",
   borderRadius: "10px",
-  border: "none",
   background: "#3b82f6",
   color: "white",
-  cursor: "pointer"
+  border: "none"
 };
 
 const grid = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
-  gap: "15px"
+  gap: "15px",
+  marginTop: "20px"
 };
 
 const card = {
   background: "white",
   padding: "15px",
   borderRadius: "10px",
-  boxShadow: "0 4px 10px rgba(0,0,0,0.08)"
-};
-
-const skeleton = {
-  height: "120px",
-  borderRadius: "10px",
-  background: "linear-gradient(90deg,#e2e8f0,#f1f5f9,#e2e8f0)",
-  animation: "pulse 1.5s infinite"
-};
-
-const actions = {
-  display: "flex",
-  gap: "10px",
-  margin: "10px 0"
+  boxShadow: "0 4px 10px rgba(0,0,0,0.1)"
 };
 
 const date = {
   fontSize: "12px",
-  color: "#64748b"
+  color: "gray"
+};
+
+const actions = {
+  margin: "10px 0"
 };
 
 const link = {
   color: "#2563eb",
-  textDecoration: "none",
-  fontWeight: "bold"
+  textDecoration: "none"
 };
