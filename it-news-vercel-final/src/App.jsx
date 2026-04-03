@@ -6,7 +6,6 @@ const API_KEY = import.meta.env.VITE_API_KEY;
 export default function App() {
   const [news, setNews] = useState([]);
   const [country, setCountry] = useState("in");
-  const [type, setType] = useState("all"); // all or tech
   const [search, setSearch] = useState("");
   const [saved, setSaved] = useState(
     JSON.parse(localStorage.getItem("savedNews")) || []
@@ -14,12 +13,18 @@ export default function App() {
 
   const fetchNews = async () => {
     try {
-      let url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&language=en`;
+      let url = "";
 
-      if (country === "in") url += "&country=in";
+      // ✅ INDIA NEWS
+      if (country === "in") {
+        url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&country=in&language=en`;
+      } 
+      // ✅ WORLD NEWS (FIXED)
+      else {
+        url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&language=en&q=technology`;
+      }
 
-      if (type === "tech") url += "&category=technology";
-
+      // 🔍 search
       if (search) url += `&q=${search}`;
 
       const res = await axios.get(url);
@@ -31,7 +36,7 @@ export default function App() {
 
   useEffect(() => {
     fetchNews();
-  }, [country, type]);
+  }, [country]);
 
   useEffect(() => {
     const delay = setTimeout(fetchNews, 400);
@@ -55,7 +60,7 @@ export default function App() {
       {/* HEADER */}
       <div style={header}>
         <h1 style={{ color: "#1e40af" }}>📰 IT News Aggregate</h1>
-        <p style={{ color: "#475569" }}>India • World • Tech Updates</p>
+        <p style={{ color: "#475569" }}>India • World News</p>
       </div>
 
       {/* SEARCH */}
@@ -65,13 +70,14 @@ export default function App() {
         style={input}
       />
 
-      {/* FILTER */}
+      {/* ONLY INDIA + WORLD */}
       <div style={filters}>
-        <button onClick={() => setCountry("in")} style={btnBlue}>🇮🇳 India</button>
-        <button onClick={() => setCountry("us")} style={btnBlue}>🌍 World</button>
-
-        <button onClick={() => setType("all")} style={btnGreen}>All</button>
-        <button onClick={() => setType("tech")} style={btnGreen}>Tech</button>
+        <button onClick={() => setCountry("in")} style={btnBlue}>
+          🇮🇳 India
+        </button>
+        <button onClick={() => setCountry("us")} style={btnBlue}>
+          🌍 World
+        </button>
       </div>
 
       {/* TOP NEWS */}
@@ -79,6 +85,11 @@ export default function App() {
         <div style={banner}>
           <h2>{news[0].title}</h2>
         </div>
+      )}
+
+      {/* EMPTY FIX */}
+      {news.length === 0 && (
+        <h2 style={{ textAlign: "center" }}>Loading news...</h2>
       )}
 
       {/* NEWS */}
@@ -120,7 +131,7 @@ export default function App() {
   );
 }
 
-/* 🎨 STYLES */
+/* 🎨 STYLE */
 
 const app = {
   background: "linear-gradient(135deg,#e0f2fe,#f0fdf4)",
@@ -147,8 +158,7 @@ const filters = {
   display: "flex",
   justifyContent: "center",
   gap: "10px",
-  margin: "15px 0",
-  flexWrap: "wrap"
+  margin: "15px 0"
 };
 
 const btnBlue = {
@@ -156,15 +166,6 @@ const btnBlue = {
   borderRadius: "10px",
   border: "none",
   background: "#3b82f6",
-  color: "white",
-  cursor: "pointer"
-};
-
-const btnGreen = {
-  padding: "10px 15px",
-  borderRadius: "10px",
-  border: "none",
-  background: "#22c55e",
   color: "white",
   cursor: "pointer"
 };
