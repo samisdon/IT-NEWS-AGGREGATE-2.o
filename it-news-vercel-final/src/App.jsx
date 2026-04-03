@@ -5,7 +5,6 @@ const API_KEY = import.meta.env.VITE_API_KEY;
 
 export default function App() {
   const [news, setNews] = useState([]);
-  const [country, setCountry] = useState("in");
   const [search, setSearch] = useState("");
   const [saved, setSaved] = useState(
     JSON.parse(localStorage.getItem("savedNews")) || []
@@ -16,10 +15,8 @@ export default function App() {
     try {
       setLoading(true);
 
-      let url = `https://gnews.io/api/v4/top-headlines?token=${API_KEY}&lang=en`;
-
-      if (country === "in") url += "&country=in";
-      else url += "&country=us";
+      // ✅ ONLY INDIA NEWS
+      let url = `https://gnews.io/api/v4/top-headlines?token=${API_KEY}&country=in&lang=en`;
 
       if (search) url += `&q=${search}`;
 
@@ -35,7 +32,7 @@ export default function App() {
 
   useEffect(() => {
     fetchNews();
-  }, [country]);
+  }, []);
 
   useEffect(() => {
     const delay = setTimeout(fetchNews, 400);
@@ -56,25 +53,24 @@ export default function App() {
   return (
     <div style={app}>
       
-      <h1 style={{ textAlign: "center" }}>📰 IT News Aggregate</h1>
+      {/* HEADER */}
+      <h1 style={title}>📰 IT News Aggregate</h1>
+      <p style={subtitle}>Latest India News 🇮🇳</p>
 
+      {/* SEARCH */}
       <input
-        placeholder="Search news..."
+        placeholder="Search India news..."
         onChange={(e) => setSearch(e.target.value)}
         style={input}
       />
 
-      <div style={filters}>
-        <button onClick={() => setCountry("in")} style={btn}>
-          🇮🇳 India
-        </button>
-        <button onClick={() => setCountry("us")} style={btn}>
-          🌍 World
-        </button>
-      </div>
-
+      {/* LOADING */}
       {loading ? (
-        <h2 style={{ textAlign: "center" }}>Loading...</h2>
+        <div style={grid}>
+          {[...Array(6)].map((_, i) => (
+            <div key={i} style={skeleton}></div>
+          ))}
+        </div>
       ) : (
         <div style={grid}>
           {news.map((n, i) => (
@@ -104,12 +100,22 @@ export default function App() {
   );
 }
 
-/* STYLE */
+/* 🎨 STYLE */
 
 const app = {
-  background: "#f1f5f9",
+  background: "linear-gradient(135deg,#e0f2fe,#f0fdf4)",
   minHeight: "100vh",
   padding: "20px"
+};
+
+const title = {
+  textAlign: "center",
+  color: "#1e40af"
+};
+
+const subtitle = {
+  textAlign: "center",
+  color: "#475569"
 };
 
 const input = {
@@ -120,20 +126,6 @@ const input = {
   maxWidth: "400px",
   display: "block",
   margin: "10px auto"
-};
-
-const filters = {
-  display: "flex",
-  justifyContent: "center",
-  gap: "10px"
-};
-
-const btn = {
-  padding: "10px",
-  borderRadius: "10px",
-  background: "#3b82f6",
-  color: "white",
-  border: "none"
 };
 
 const grid = {
@@ -148,6 +140,12 @@ const card = {
   padding: "15px",
   borderRadius: "10px",
   boxShadow: "0 4px 10px rgba(0,0,0,0.1)"
+};
+
+const skeleton = {
+  height: "120px",
+  borderRadius: "10px",
+  background: "#e2e8f0"
 };
 
 const date = {
