@@ -37,10 +37,14 @@ export default function App() {
   return (
     <div style={app}>
       
-      {/* 🔥 HERO HEADER */}
+      {/* 🔥 HEADER */}
       <div style={hero}>
-        <h1>📰 IT News Aggregate</h1>
-        <p>Tech • India • World • Real-time Updates</p>
+        <h1 style={{ animation: "fadeDown 1s ease" }}>
+          📰 IT News Aggregate
+        </h1>
+        <p style={{ opacity: 0.7 }}>
+          Tech • India • World • Real-time Updates
+        </p>
       </div>
 
       {/* 🔍 SEARCH */}
@@ -50,7 +54,9 @@ export default function App() {
           onChange={(e) => setSearch(e.target.value)}
           style={input}
         />
-        <button onClick={fetchNews} style={searchBtn}>Search</button>
+        <button onClick={fetchNews} style={searchBtn}>
+          Search
+        </button>
       </div>
 
       {/* 🌍 FILTER */}
@@ -81,26 +87,32 @@ export default function App() {
       <div style={grid}>
         {news.map((n, i) => (
           <div key={i} style={card}>
-            
-            {/* 🖼 IMAGE */}
-            {n.image_url && (
-              <img src={n.image_url} style={img} />
-            )}
-
-            <div style={{ padding: "15px" }}>
-              <h3 style={title}>{n.title}</h3>
-
-              <p style={source}>
-                {n.source_id || "Unknown"}
-              </p>
-
-              <a href={n.link} target="_blank" style={link}>
-                Read Full →
-              </a>
-            </div>
+            <h3>{n.title}</h3>
+            <p style={source}>{n.source_id || "Unknown"}</p>
+            <a href={n.link} target="_blank" style={link}>
+              Read Full →
+            </a>
           </div>
         ))}
       </div>
+
+      {/* 🔥 ANIMATION CSS */}
+      <style>{`
+        @keyframes fadeDown {
+          from {
+            opacity: 0;
+            transform: translateY(-30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        div:hover {
+          transform: scale(1.03);
+        }
+      `}</style>
     </div>
   );
 }
@@ -116,8 +128,7 @@ const app = {
 
 const hero = {
   textAlign: "center",
-  padding: "40px 20px",
-  fontSize: "22px"
+  padding: "40px 20px"
 };
 
 const searchBox = {
@@ -174,26 +185,16 @@ const card = {
   background: "rgba(255,255,255,0.08)",
   backdropFilter: "blur(20px)",
   borderRadius: "15px",
-  overflow: "hidden",
+  padding: "20px",
   transition: "0.3s",
-  boxShadow: "0 10px 25px rgba(0,0,0,0.4)"
-};
-
-const img = {
-  width: "100%",
-  height: "180px",
-  objectFit: "cover"
-};
-
-const title = {
-  fontSize: "16px",
-  marginBottom: "10px"
+  boxShadow: "0 10px 25px rgba(0,0,0,0.4)",
+  cursor: "pointer"
 };
 
 const source = {
   fontSize: "12px",
   opacity: 0.6,
-  marginBottom: "10px"
+  margin: "10px 0"
 };
 
 const link = {
