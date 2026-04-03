@@ -38,13 +38,9 @@ export default function App() {
     <div style={app}>
       
       {/* 🔥 HEADER */}
-      <div style={hero}>
-        <h1 style={{ animation: "fadeDown 1s ease" }}>
-          📰 IT News Aggregate
-        </h1>
-        <p style={{ opacity: 0.7 }}>
-          Tech • India • World • Real-time Updates
-        </p>
+      <div style={header}>
+        <h1>📰 IT News Aggregate</h1>
+        <p>Tech • India • World • Real-time Updates</p>
       </div>
 
       {/* 🔍 SEARCH */}
@@ -59,7 +55,7 @@ export default function App() {
         </button>
       </div>
 
-      {/* 🌍 FILTER */}
+      {/* 🌍 TOGGLE */}
       <div style={toggle}>
         <button
           onClick={() => setCountry("in")}
@@ -86,7 +82,7 @@ export default function App() {
       {/* 📰 CARDS */}
       <div style={grid}>
         {news.map((n, i) => (
-          <div key={i} style={card}>
+          <div key={i} style={card} className="card-hover">
             <h3>{n.title}</h3>
             <p style={source}>{n.source_id || "Unknown"}</p>
             <a href={n.link} target="_blank" style={link}>
@@ -96,12 +92,12 @@ export default function App() {
         ))}
       </div>
 
-      {/* 🔥 ANIMATION CSS */}
+      {/* 🔥 ANIMATIONS */}
       <style>{`
         @keyframes fadeDown {
           from {
             opacity: 0;
-            transform: translateY(-30px);
+            transform: translateY(-20px);
           }
           to {
             opacity: 1;
@@ -109,26 +105,28 @@ export default function App() {
           }
         }
 
-        div:hover {
-          transform: scale(1.03);
+        .card-hover:hover {
+          transform: scale(1.05);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
       `}</style>
     </div>
   );
 }
 
-/* 🔥 STYLES */
+/* 🎨 LIGHT UI STYLES */
 
 const app = {
-  background: "linear-gradient(135deg,#020617,#0f172a)",
+  background: "linear-gradient(135deg,#e0f2fe,#f8fafc)",
   minHeight: "100vh",
-  color: "white",
-  paddingBottom: "40px"
+  paddingBottom: "40px",
+  color: "#0f172a"
 };
 
-const hero = {
+const header = {
   textAlign: "center",
-  padding: "40px 20px"
+  padding: "30px 20px",
+  animation: "fadeDown 1s ease"
 };
 
 const searchBox = {
@@ -141,8 +139,8 @@ const searchBox = {
 const input = {
   padding: "12px",
   borderRadius: "25px",
-  border: "none",
-  width: "280px"
+  border: "1px solid #ccc",
+  width: "260px"
 };
 
 const searchBtn = {
@@ -156,7 +154,7 @@ const searchBtn = {
 
 const toggle = {
   textAlign: "center",
-  marginBottom: "30px"
+  marginBottom: "25px"
 };
 
 const btn = {
@@ -164,41 +162,41 @@ const btn = {
   padding: "10px 18px",
   borderRadius: "20px",
   border: "none",
-  background: "#1e293b",
-  color: "white",
+  background: "#e2e8f0",
+  color: "#0f172a",
   cursor: "pointer"
 };
 
 const active = {
   ...btn,
-  background: "#2563eb"
+  background: "#2563eb",
+  color: "white"
 };
 
 const grid = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
-  gap: "25px",
+  gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+  gap: "20px",
   padding: "20px"
 };
 
 const card = {
-  background: "rgba(255,255,255,0.08)",
-  backdropFilter: "blur(20px)",
+  background: "white",
   borderRadius: "15px",
   padding: "20px",
   transition: "0.3s",
-  boxShadow: "0 10px 25px rgba(0,0,0,0.4)",
+  boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
   cursor: "pointer"
 };
 
 const source = {
   fontSize: "12px",
-  opacity: 0.6,
+  color: "#64748b",
   margin: "10px 0"
 };
 
 const link = {
-  color: "#38bdf8",
+  color: "#2563eb",
   textDecoration: "none",
   fontWeight: "bold"
 };
