@@ -12,9 +12,23 @@ export default function App() {
   const fetchNews = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `https://newsdata.io/api/1/news?apikey=${API_KEY}&country=${country}&q=${search}&language=en`
-      );
+      let url = "";
+
+      // 🇮🇳 India news
+      if (country === "in") {
+        url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&country=in&language=en`;
+      } 
+      // 🌍 World news FIX
+      else {
+        url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&language=en&category=top`;
+      }
+
+      // 🔍 Search support
+      if (search) {
+        url += `&q=${search}`;
+      }
+
+      const res = await axios.get(url);
       setNews(res.data.results || []);
     } catch (err) {
       console.log(err);
@@ -62,15 +76,21 @@ export default function App() {
       </div>
 
       {/* 🔄 LOADING */}
-      {loading ? (
-        <h2 style={{ textAlign: "center" }}>Loading...</h2>
-      ) : (
+      {loading && <h2 style={{ textAlign: "center" }}>Loading...</h2>}
+
+      {/* ❌ EMPTY STATE */}
+      {!loading && news.length === 0 && (
+        <h2 style={{ textAlign: "center" }}>No news found 😢</h2>
+      )}
+
+      {/* 📰 NEWS GRID */}
+      {!loading && news.length > 0 && (
         <div style={grid}>
           {news.map((n, i) => (
             <div key={i} style={card}>
               <h3>{n.title}</h3>
               <p style={{ fontSize: "12px", opacity: 0.6 }}>
-                {n.source_id}
+                {n.source_id || "Unknown"}
               </p>
               <a href={n.link} target="_blank" style={link}>
                 Read More →
