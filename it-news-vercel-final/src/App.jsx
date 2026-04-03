@@ -8,14 +8,12 @@ export default function App() {
   const [country, setCountry] = useState("in");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
-  const [dark, setDark] = useState(false);
   const [saved, setSaved] = useState(
     JSON.parse(localStorage.getItem("savedNews")) || []
   );
-  const [page, setPage] = useState(1);
 
   // 🔥 Fetch News
-  const fetchNews = async (reset = false) => {
+  const fetchNews = async (reset = true) => {
     try {
       let url = "";
 
@@ -29,53 +27,26 @@ export default function App() {
       if (search) url += `&q=${search}`;
 
       const res = await axios.get(url);
-
-      if (reset) {
-        setNews(res.data.results || []);
-      } else {
-        setNews((prev) => [...prev, ...(res.data.results || [])]);
-      }
+      setNews(res.data.results || []);
     } catch (err) {
       console.log(err);
     }
   };
 
-  // 🔄 First Load
+  // 🔄 Load
   useEffect(() => {
-    fetchNews(true);
+    fetchNews();
   }, [country, category]);
 
   // 🔍 Live Search
   useEffect(() => {
     const delay = setTimeout(() => {
-      fetchNews(true);
-    }, 500);
+      fetchNews();
+    }, 400);
     return () => clearTimeout(delay);
   }, [search]);
 
-  // 🔄 Auto Refresh
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchNews(true);
-    }, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // ⚡ Infinite Scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop >=
-        document.documentElement.offsetHeight - 100
-      ) {
-        fetchNews();
-      }
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // ❤️ Save News
+  // ❤️ Save
   const toggleSave = (item) => {
     let updated;
     if (saved.find((s) => s.link === item.link)) {
@@ -88,14 +59,12 @@ export default function App() {
   };
 
   return (
-    <div style={dark ? darkApp : lightApp}>
+    <div style={app}>
       
       {/* 🔥 HEADER */}
       <div style={header}>
         <h1>📰 IT News Aggregate</h1>
-        <button onClick={() => setDark(!dark)} style={btn}>
-          {dark ? "☀️ Light" : "🌙 Dark"}
-        </button>
+        <p>Simple • Clean • Modern News App</p>
       </div>
 
       {/* 🔍 SEARCH */}
@@ -105,10 +74,10 @@ export default function App() {
         style={input}
       />
 
-      {/* 🌍 FILTERS */}
+      {/* 🌍 FILTER */}
       <div style={filters}>
-        <button onClick={() => setCountry("in")} style={btn}>🇮🇳 India</button>
-        <button onClick={() => setCountry("us")} style={btn}>🌍 World</button>
+        <button onClick={() => setCountry("in")} style={btn}>India</button>
+        <button onClick={() => setCountry("us")} style={btn}>World</button>
 
         <select onChange={(e) => setCategory(e.target.value)} style={input}>
           <option value="">All</option>
@@ -119,14 +88,14 @@ export default function App() {
         </select>
       </div>
 
-      {/* 🔥 TOP HEADLINE */}
+      {/* 🔥 TOP NEWS */}
       {news[0] && (
         <div style={banner}>
           <h2>{news[0].title}</h2>
         </div>
       )}
 
-      {/* 📰 NEWS */}
+      {/* 📰 CARDS */}
       <div style={grid}>
         {news.map((n, i) => (
           <div key={i} style={card}>
@@ -155,7 +124,9 @@ export default function App() {
               </button>
             </div>
 
-            <a href={n.link} target="_blank">Read →</a>
+            <a href={n.link} target="_blank" style={link}>
+              Read →
+            </a>
           </div>
         ))}
       </div>
@@ -163,65 +134,59 @@ export default function App() {
   );
 }
 
-/* 🎨 STYLES */
+/* 🎨 CLEAN LIGHT STYLES */
 
-const lightApp = {
-  background: "#f8fafc",
-  minHeight: "100vh",
-  padding: "20px"
-};
-
-const darkApp = {
-  background: "#020617",
-  color: "white",
+const app = {
+  background: "#f1f5f9",
   minHeight: "100vh",
   padding: "20px"
 };
 
 const header = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center"
+  textAlign: "center",
+  marginBottom: "20px",
+  color: "#0f172a"
 };
 
 const filters = {
-  margin: "10px 0",
   display: "flex",
-  gap: "10px"
+  gap: "10px",
+  margin: "15px 0"
 };
 
 const input = {
   padding: "10px",
   borderRadius: "10px",
-  border: "1px solid #ccc"
+  border: "1px solid #cbd5e1"
 };
 
 const btn = {
-  padding: "8px 12px",
+  padding: "10px 15px",
   borderRadius: "10px",
   border: "none",
+  background: "#e2e8f0",
   cursor: "pointer"
 };
 
 const banner = {
-  background: "#2563eb",
-  color: "white",
+  background: "#38bdf8",
   padding: "15px",
   borderRadius: "10px",
+  color: "white",
   margin: "15px 0"
 };
 
 const grid = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
+  gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
   gap: "15px"
 };
 
 const card = {
   background: "white",
   padding: "15px",
-  borderRadius: "10px",
-  boxShadow: "0 5px 15px rgba(0,0,0,0.1)"
+  borderRadius: "12px",
+  boxShadow: "0 4px 10px rgba(0,0,0,0.08)"
 };
 
 const actions = {
@@ -232,5 +197,11 @@ const actions = {
 
 const date = {
   fontSize: "12px",
-  color: "gray"
+  color: "#64748b"
+};
+
+const link = {
+  color: "#2563eb",
+  textDecoration: "none",
+  fontWeight: "bold"
 };
